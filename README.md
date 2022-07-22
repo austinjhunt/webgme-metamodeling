@@ -1,4 +1,4 @@
-# Transforming Models in WebGME With Python and Templating
+# Transforming Models in WebGME With Python & JavaScript
 
 Taking steps toward learning how to build my own design studio with [WebGME](https://webgme.org) as part of CS 6388 Model Integrated Computing (an Advanced Graduate Course) at [Vanderbilt University](https://vanderbilt.edu). Homework assignments [5](hw5/README.md), [6](hw6/README.md), and [7](hw7/README.md) specifically focus on using [iCore](https://www.npmjs.com/package/webgme-icore), a visualizer for WebGME that enables editing and execution of code using the same APIs as a **plugin** directly in the WebGME GUI, where a [plugin](https://github.com/webgme/webgme/wiki/GME-Plugins) is a custom extension point to a webgme-deployment intended to be used for querying, interpreting, and building models.
 
