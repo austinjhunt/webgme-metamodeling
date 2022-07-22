@@ -1,0 +1,493 @@
+{
+    "": {
+        "GUID": "03d36072-9e09-7866-cb4e-d0a36ff825f6",
+        "attributes": {
+            "name": "ROOT",
+            "pythonCode": "class PythonPlugin(PluginBase):\n  def main(self):\n    self.namespace = None   \n    self.nodes = self.core.load_own_sub_tree(self.active_node)\n    self.node_paths = self.get_paths_to_nodes() \n    self.graph = {}\n    for node in self.nodes: \n      node_path = node['nodePath'] \n      node_dict = {\n        'is_meta_node': self.core.is_meta_node(node),\n        'name': self.core.get_attribute(node, 'name'),\n        'GUID': self.core.get_guid(node),\n        'meta': self.get_meta_type(node) if node_path != '' else None,\n        'attributes': self.get_attributes(node)\n      }\n      self.logger.info(node_dict)\n      self.graph[node_path] = node_dict   \n    self.pretty_print_graph()\n  \n  def pretty_print_graph(self):\n    \"\"\" Pretty print the graph (as json)\"\"\"\n    import json  \n    self.logger.info(json.dumps(self.graph, sort_keys=True, indent=4))\n  \n  def get_attributes(self, node):\n    \"\"\" Get the attribute names using built in method of core; \n    then get value of each attribute by its name for current node;\n    store each attribute name as key and attribute value as value \n    in the returned dictionary \"\"\"\n    attributes = self.core.get_attribute_names(node)\n    return {\n     a : self.core.get_attribute(node, a) for a in attributes \n    }\n  \n  def get_meta_type(self, node):\n    \"\"\" if node is a meta node, then the name of the meta type is itself; \n    otherwise, get the meta type of the node, then get path \n    to meta type node, then get node by its path, then get its name and return it \"\"\"\n    if self.core.is_meta_node(node):\n      meta_node_name = self.core.get_attribute(node, 'name')\n    else: \n      meta = self.core.get_meta_type(node)\n      meta_node_path = meta['nodePath']\n      meta_node = self.core.load_by_path(self.active_node, meta_node_path)\n      meta_node_name = self.core.get_attribute(meta_node, 'name')\n    return meta_node_name \n    \n  def is_station_or_switch(self, node):\n    \"\"\" return true if node is either a station or a switch, false otherwise \"\"\"\n    return self.core.is_instance_of(node, self.META['Station']) or self.core.is_instance_of(node, self.META['Switch'])\n     \n  def is_track(self, node): \n    \"\"\" return true if node is a track, false otherwise \"\"\"\n    return self.core.is_instance_of(node, self.META['Track'])\n\n  def get_paths_to_nodes(self): \n    \"\"\" return a dictionary containing all node\n    paths as keys and the respective nodes as their values \"\"\"\n    return {\n            self.core.get_path(node): node \\\n                for node in self.nodes\n                }\n    \n  def get_track_end(self, track, end='src'):\n    \"\"\" Get the source (end='src') or destination (end='dest') \n    station of a track node. the src or the dst is the Port. Want the\n    corresponding station which is the parent of that port, i.e. \n    get port, then get path to port, then get parent of that path. \"\"\" \n    pointer_path = self.core.get_pointer_path(track, end)\n    if pointer_path:\n      node = self.node_paths[pointer_path] \n      parent = self.core.get_parent(node) \n      parent_path = self.core.get_path(parent) \n      return parent_path \n    else:\n      return None",
+            "scriptCode": "function (callback) {\n   var activeNode = this.activeNode,\n      core = this.core,\n      logger = this.logger;\n  var graph = {};\n  function atNode(node, done) {\n    try {\n      var metaNode = core.getBaseType(node),\n          name = core.getAttribute(node, 'name'),\n          path = core.getPath(node),\n          guid = core.getAttribute(node, 'GUID'),\n          metaType;\n\n      if (metaNode) {\n        metaType = core.getAttribute(metaNode, 'name');\n      } else {\n        // The root-node does not have a meta node.\n        metaType = null;\n      }\n      graph[path] = {\n        \"name\": name,\n        \"GUID\": guid,\n        \"meta\": metaType,\n        \"attributes\": core.getAttributeNames(node)\n      };\n      logger.info('[', path, '] - ', name, 'is of type', metaType); \n      done();\n    } catch (err) {\n      done(err);\n    }\n  }\n\n  core.traverse(activeNode, null, atNode, callback);\n  logger.info(graph);\n}"
+        },
+        "is_meta_node": false,
+        "meta": null,
+        "name": "ROOT"
+    },
+    "/1": {
+        "GUID": "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045",
+        "attributes": {
+            "name": "FCO"
+        },
+        "is_meta_node": true,
+        "meta": "FCO",
+        "name": "FCO"
+    },
+    "/H": {
+        "GUID": "34fb0500-1eb9-781a-d842-0de9172c6b69",
+        "attributes": {
+            "name": "HomeworkNetwork",
+            "outputTemplate": "% for path, trip in trips.items():\n<%\n  start = path.split(\"->\")[0]\n  end = path.split(\"->\")[1]\n  distance = trip['len']\n%>\nThe shortest path from ${start} to ${end} is ${distance} miles. \\\n<%\n  pathList = trip[\"path\"]\n  if len(pathList) > 2:\n    route = \", \".join(pathList[:-1])\n    route += \" and \"+ pathList[-1]\n  else:\n    route = \" and \".join(pathList)\n  endif\n%>\n  % if len(pathList) > 0:\nOn the path you will travel through ${route}.\n  % else:\nThis trip is non-stop.\n  % endif\n% endfor",
+            "pythonCode": "",
+            "template": ""
+        },
+        "is_meta_node": false,
+        "meta": "RailroadNetwork",
+        "name": "HomeworkNetwork"
+    },
+    "/H/0": {
+        "GUID": "66535cfc-ab07-50c4-5bfc-264c9bab18c5",
+        "attributes": {
+            "length": 1,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/5": {
+        "GUID": "02feef0d-d264-2532-5757-a78a59dbf431",
+        "attributes": {
+            "length": 2,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/6": {
+        "GUID": "09d5ae6d-5739-12ae-da9d-3e4efc973a7c",
+        "attributes": {
+            "capacity": 0,
+            "name": "Sa"
+        },
+        "is_meta_node": false,
+        "meta": "Station",
+        "name": "Sa"
+    },
+    "/H/6/Q": {
+        "GUID": "a7eec158-4c1e-9199-4f38-1858f3c1f688",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/6/p": {
+        "GUID": "2c6d6c3b-64ee-c9cf-6ac0-751cdf0746b0",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/6/w": {
+        "GUID": "6af12fee-cca3-46a3-786d-95d87d08189c",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/8": {
+        "GUID": "4ff86335-f0fb-b3db-1b78-d91ad07a1b00",
+        "attributes": {
+            "length": 2,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/C": {
+        "GUID": "d5cfea86-d83b-382b-d2a8-2882f742c5ff",
+        "attributes": {
+            "capacity": 0,
+            "name": "Sc"
+        },
+        "is_meta_node": false,
+        "meta": "Station",
+        "name": "Sc"
+    },
+    "/H/C/7": {
+        "GUID": "cab1d405-74ea-6f74-f54b-160c696d9324",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/C/c": {
+        "GUID": "b281eb90-7e9c-debf-cefb-9494bd08fc24",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/D": {
+        "GUID": "ab1cc16f-2fb3-0dc7-b6f9-1659e8c94d4f",
+        "attributes": {
+            "name": "Fork"
+        },
+        "is_meta_node": false,
+        "meta": "Fork",
+        "name": "Fork"
+    },
+    "/H/D/F": {
+        "GUID": "39c4ace3-1924-5d2e-85ca-9c771567bcaf",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/D/N": {
+        "GUID": "5c7c41bf-0d72-9478-2bd6-31bbef17bf47",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/D/j": {
+        "GUID": "ac4be3e9-9a69-c1c7-18e0-ddfef0c73089",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/H": {
+        "GUID": "5f6c8a5c-28af-f43a-8538-7c65407bc652",
+        "attributes": {
+            "length": 10,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/K": {
+        "GUID": "a14634a2-9ffa-724a-5f01-c047f0303b60",
+        "attributes": {
+            "length": 1,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/L": {
+        "GUID": "24fe9593-b31a-396d-d463-99f784279d14",
+        "attributes": {
+            "capacity": 0,
+            "name": "Sb"
+        },
+        "is_meta_node": false,
+        "meta": "Station",
+        "name": "Sb"
+    },
+    "/H/L/E": {
+        "GUID": "99a5f11e-efd8-00ad-1458-fcfbb6c1b754",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/L/h": {
+        "GUID": "8f4b55b6-b965-a9a8-599e-4fde2442996a",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/L/m": {
+        "GUID": "aa88775f-75bb-f9d7-6765-a247cc737472",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/T": {
+        "GUID": "9fa7f4c8-2afb-3af0-4703-8360b8b5913a",
+        "attributes": {
+            "length": 1,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/V": {
+        "GUID": "727a8567-0b54-b58d-60e8-81fe74f6a208",
+        "attributes": {
+            "length": 2,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/g": {
+        "GUID": "5054944f-60d8-e131-2757-57ead5e581b9",
+        "attributes": {
+            "name": "Switch"
+        },
+        "is_meta_node": false,
+        "meta": "Switch",
+        "name": "Switch"
+    },
+    "/H/g/B": {
+        "GUID": "462a2a43-243f-bf81-5fb5-55985e332ff4",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/g/E": {
+        "GUID": "df4b0655-b735-7173-c5f6-1188ca303dab",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/g/P": {
+        "GUID": "cbe2d6fe-cb41-b916-debe-ac17c2315322",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/g/R": {
+        "GUID": "faed2a33-6903-210c-241f-14d7cd5f5c94",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/h": {
+        "GUID": "ccdf75d5-1953-a4b1-fffc-648310559fda",
+        "attributes": {
+            "length": 8,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/H/r": {
+        "GUID": "bafc415e-7def-a5d4-ba72-3c072d3058ae",
+        "attributes": {
+            "capacity": 0,
+            "name": "Sd"
+        },
+        "is_meta_node": false,
+        "meta": "Station",
+        "name": "Sd"
+    },
+    "/H/r/V": {
+        "GUID": "bdab2fa4-82d9-cfdb-8350-40cbf8044085",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/r/Y": {
+        "GUID": "761d82e2-589d-b88e-7322-c0ec12cc0165",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/H/r/w": {
+        "GUID": "444fa2ae-abb6-f73c-df4a-f4511e5ccb85",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/H/s": {
+        "GUID": "44c5cbf9-f0e1-957c-3432-ceb609888a07",
+        "attributes": {
+            "length": 1,
+            "name": "Track"
+        },
+        "is_meta_node": false,
+        "meta": "Track",
+        "name": "Track"
+    },
+    "/l": {
+        "GUID": "19357b62-9073-205a-5306-d1911dea1719",
+        "attributes": {
+            "name": "RailroadNetworks"
+        },
+        "is_meta_node": true,
+        "meta": "RailroadNetworks",
+        "name": "RailroadNetworks"
+    },
+    "/l/2": {
+        "GUID": "9a6b7744-2f41-71df-ec7c-8a253cacaa66",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": true,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/l/BO": {
+        "GUID": "73a06ed8-751d-dfa2-f3a3-7f6fb3ed3a68",
+        "attributes": {
+            "name": "Port"
+        },
+        "is_meta_node": true,
+        "meta": "Port",
+        "name": "Port"
+    },
+    "/l/C": {
+        "GUID": "5cd8cbfc-88e3-a864-83c6-1283536d27ef",
+        "attributes": {
+            "name": "Merge"
+        },
+        "is_meta_node": true,
+        "meta": "Merge",
+        "name": "Merge"
+    },
+    "/l/C/4": {
+        "GUID": "dd060ca7-0d13-972b-60ea-07686f2b4837",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/l/C/Y": {
+        "GUID": "5423f8ff-de80-ee7e-61e5-98a26243e68f",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/l/C/w": {
+        "GUID": "d9012b7e-9fdb-c0ab-628f-b664f31cf141",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/l/M": {
+        "GUID": "17668920-3b3b-bf03-0fee-69acf471fc35",
+        "attributes": {
+            "name": "RailroadNetwork",
+            "outputTemplate": "% for path, trip in trips.items():\n<%\n  start = path.split(\"->\")[0]\n  end = path.split(\"->\")[1]\n  distance = trip['len']\n%>\nThe shortest path from ${start} to ${end} is ${distance} miles. \\\n<%\n  pathList = trip[\"path\"]\n  if len(pathList) > 2:\n    route = \", \".join(pathList[:-1])\n    route += \" and \"+ pathList[-1]\n  else:\n    route = \" and \".join(pathList)\n  endif\n%>\n  % if len(pathList) > 0:\nOn the path you will travel through ${route}.\n  % else:\nThis trip is non-stop.\n  % endif\n% endfor",
+            "pythonCode": "",
+            "template": ""
+        },
+        "is_meta_node": true,
+        "meta": "RailroadNetwork",
+        "name": "RailroadNetwork"
+    },
+    "/l/d": {
+        "GUID": "a91b4adf-2ccc-5043-ac41-9ed078fe3a64",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": true,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/l/e": {
+        "GUID": "5e3d9fe3-bf04-c2d9-d455-9b5b81ec33ad",
+        "attributes": {
+            "name": "Fork"
+        },
+        "is_meta_node": true,
+        "meta": "Fork",
+        "name": "Fork"
+    },
+    "/l/e/F": {
+        "GUID": "cce5f26f-8993-9230-e766-11757c42c24d",
+        "attributes": {
+            "name": "EntryPort"
+        },
+        "is_meta_node": false,
+        "meta": "EntryPort",
+        "name": "EntryPort"
+    },
+    "/l/e/N": {
+        "GUID": "a95d1f33-9dc5-5b66-497a-bcb98632c1a5",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/l/e/j": {
+        "GUID": "596abd65-0ade-0ed9-7a4c-50fc99e24e6b",
+        "attributes": {
+            "name": "ExitPort"
+        },
+        "is_meta_node": false,
+        "meta": "ExitPort",
+        "name": "ExitPort"
+    },
+    "/l/h": {
+        "GUID": "d178b515-288e-3637-ebb0-2f750f478854",
+        "attributes": {
+            "capacity": 0,
+            "name": "Station"
+        },
+        "is_meta_node": true,
+        "meta": "Station",
+        "name": "Station"
+    },
+    "/l/m": {
+        "GUID": "c2946b8a-1763-58fa-0291-4fd42d665c63",
+        "attributes": {
+            "name": "Switch"
+        },
+        "is_meta_node": true,
+        "meta": "Switch",
+        "name": "Switch"
+    },
+    "/l/r": {
+        "GUID": "cecce599-7de1-f71a-c5e6-9be34123d04e",
+        "attributes": {
+            "length": 0,
+            "name": "Track"
+        },
+        "is_meta_node": true,
+        "meta": "Track",
+        "name": "Track"
+    }
+}

@@ -1,0 +1,13 @@
+A path from Sa to Sa is 0 miles. You do not need to travel anywhere since you are already there.
+A path from Sb to Sd is 10 miles. It is a direct connection so you will not travel through any other stations or switches.
+A path from Sd to Sb is 5 miles. On the path you will travel through Fork, Sa, and Switch.
+A path from Sd to Sa is 2 miles. On the path you will travel through Fork
+A path from Sa to Sb is 3 miles. On the path you will travel through Switch
+A path from Sb to Sc is 4 miles. On the path you will travel through Sa, and Switch.
+A path from Sa to Sc is 2 miles. On the path you will travel through Switch
+A path from Sb to Sa is 2 miles. It is a direct connection so you will not travel through any other stations or switches.
+A path from Sd to Sc is 9 miles. On the path you will travel through Fork
+A path from Sd to Sd is 0 miles. You do not need to travel anywhere since you are already there.
+A path from Sa to Sd is 3 miles. On the path you will travel through Switch
+A path from Sc to Sc is 0 miles. You do not need to travel anywhere since you are already there.
+A path from Sb to Sb is 0 miles. You do not need to travel anywhere since you are already there.

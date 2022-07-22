@@ -1,0 +1,18 @@
+{% for key, val in graph.items() -%}
+{% if val != -1 -%}
+{% set src, dst = key.split('->') -%}
+{% if val == 0 %}
+A path from {{src}} to {{dst}} is {{val}} miles. You do not need to travel anywhere since you are already there.
+{% elif val is mapping -%}
+{% set path_length = val['path_length'] -%}
+{% set path = val['path'][1:-1] -%}
+{% if path|length == 0 -%}
+A path from {{src}} to {{dst}} is {{path_length}} miles. It is a direct connection so you will not travel through any other stations or switches.
+{% elif path|length == 1 -%}
+A path from {{src}} to {{dst}} is {{path_length}} miles. On the path you will travel only through {{path[0]}}.
+{% else %}
+A path from {{src}} to {{dst}} is {{path_length}} miles. On the path you will travel through {{path[:-1]|join(', ')}} and {{path[-1]}}.
+{% endif %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
